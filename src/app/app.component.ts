@@ -1,52 +1,52 @@
-import { CommonModule } from "@angular/common";
-import { Component, inject } from "@angular/core";
-import { DataService } from "./services/data.service";
-import { map } from 'rxjs/operators';
+import { Component, ChangeDetectionStrategy, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { DataService } from './services/data.service';
+import { ItemSelectorComponent } from './components/item-selector.component';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 @Component({
-  selector: 'app-root',
-  standalone: true,
-  imports: [CommonModule],
-  template: `
-    <div class="p-8">
-      <h1>Testing Data Load</h1>
-      <div *ngIf="loading$ | async">Loading...</div>
-      <div *ngIf="error$ | async as error" style="color: red">Error: {{ error }}</div>
-      <div *ngIf="(loading$ | async) === false">
-        <p>Root nodes: {{ (treeData$ | async)?.length }}</p>
-        <details>
-          <summary>View tree structure (console)</summary>
-          <p>Check browser console for full tree data</p>
-        </details>
+    selector: 'app-root',
+    standalone: true,
+    imports: [CommonModule, ItemSelectorComponent],
+    changeDetection: ChangeDetectionStrategy.OnPush,
+    template: `
+    <div class="p-8 max-w-[339px] mx-auto bg-[#f8f9fa] min-h-[55vh] font-sans">
+      <h1 class="text-[24px] font-semibold text-[#3c3c3c] mb-6">Item Selector</h1>
+
+      <app-item-selector></app-item-selector>
+
+      <div style="margin-top: 12px;">
+        @if ((selectedIds$ | async)?.length) {
+          <div class="mb-4 text-[#3c3c3c] text-[14px] font-normal">
+            Selected item IDs: {{ (selectedIds$ | async)?.join(', ') }}
+          </div>
+        }
+
+        <div class="flex justify-end mt-2">
+          <button
+            style="padding: 10px 24px;"
+            class="bg-[hsl(213,97%,53%)] text-white border-0
+                   rounded-[4px] text-[14px] font-medium cursor-pointer
+                   transition-all duration-200 ease-in-out
+                   hover:bg-[hsl(213,97%,48%)] hover:shadow-[0_2px_4px_rgba(0,0,0,0.1)]
+                   disabled:bg-[hsl(210,0%,80%)] disabled:cursor-not-allowed
+                   disabled:opacity-60"
+            (click)="clearSelection()"
+            [disabled]="!(selectedIds$ | async)?.length">
+            Clear selection
+          </button>
+        </div>
       </div>
     </div>
   `
 })
 export class AppComponent {
-  private readonly dataService = inject(DataService);
-  readonly treeData$ = this.dataService.treeData$;
-  readonly loading$ = this.dataService.loading$;
-  readonly error$ = this.dataService.state$.pipe(
-    map(state => state.error)
-  );
+    private readonly dataService = inject(DataService);
+    readonly selectedIds$ = this.dataService.selectedIds$;
 
-  constructor() {
-    this.dataService.loadData().subscribe(data => {
-      console.log('✅ Tree data loaded:', data);
-      console.log('Total root nodes:', data.length);
-      console.log('Full structure:', this.removeCircularRefs(data));
-    });
-  }
+    constructor() {
+        this.dataService.loadData().pipe(takeUntilDestroyed()).subscribe();
+    }
 
-  private removeCircularRefs(obj: any): any {
-    const seen = new WeakSet();
-    return JSON.parse(JSON.stringify(obj, (key, value) => {
-      if (key === 'parent') return undefined;
-      if (typeof value === 'object' && value !== null) {
-        if (seen.has(value)) return '[Circular]';
-        seen.add(value);
-      }
-      return value;
-    }));
-  }
+    clearSelection() { this.dataService.clearAllSelections(); }
 }
