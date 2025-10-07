@@ -38,3 +38,10 @@ export interface TreeNode {
     selected: boolean;
     indeterminate: boolean;
 }
+
+export interface ItemSelectorState {
+  treeData: TreeNode[];
+  selectedIds: number[];
+  loading: boolean;
+  error: string | null;
+}
