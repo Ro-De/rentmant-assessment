@@ -42,6 +42,24 @@ export class DataService {
         );
     }
 
+    updateNodeSelection(node: TreeNode): void {
+        const treeData = structuredClone(this.state.value.treeData);
+        const targetNode = this.findNode(treeData, node.id, node.type);
+
+        if (!targetNode) return;
+
+        if (targetNode.type === NodeType.ITEM) {
+            targetNode.selected = !targetNode.selected;
+        } else {
+            const newState = targetNode.indeterminate || !targetNode.selected;
+            this.setAllChildrenSelection(targetNode, newState);
+        }
+
+        const selectedIds = [0];
+
+        this.updateState({ treeData, selectedIds });
+    }
+
     /* 
     * Builds a hierarchical tree structure from flat folder and item lists. 
     */
@@ -120,9 +138,42 @@ export class DataService {
 
     /*
     * Updates the internal state with partial changes.
-    * @params
     */
     private updateState(partial: Partial<ItemSelectorState>): void {
         this.state.next({ ...this.state.value, ...partial });
     }
+
+    /*
+    * Recursively sets the selection state for a folder and all its children.
+    */
+    private setAllChildrenSelection(node: TreeNode, selected: boolean): void {
+        if (node.type === NodeType.FOLDER) {
+            node.selected = selected;
+            node.indeterminate = false;
+
+            node.children.forEach(child => {
+                if (child.type === NodeType.ITEM) {
+                    child.selected = selected;
+                } else {
+                    this.setAllChildrenSelection(child, selected);
+                }
+            });
+        }
+    }
+
+    /*
+    * Recursively finds a node by ID and type in the tree.
+    */
+    private findNode(nodes: TreeNode[], id: number, type: NodeType): TreeNode | null {
+    for (const node of nodes) {
+      if (node.id === id && node.type === type) {
+        return node;
+      }
+      if (node.children.length > 0) {
+        const found = this.findNode(node.children, id, type);
+        if (found) return found;
+      }
+    }
+    return null;
+  }
 }
