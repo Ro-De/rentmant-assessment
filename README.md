@@ -57,3 +57,20 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+# Note to the project 
+
+## First Phase
+
+Creating github repo
+
+ng new rentman-assessment --routing=false --style=css --standalone
+cd rentman-assessment
+
+git branch -M main
+git push -u origin main
+
+
+1. Creation initial interfaces
+2. Add TreeNode model for hierarchical structure
+
