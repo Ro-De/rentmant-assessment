@@ -74,3 +74,8 @@ git push -u origin main
 1. Creation initial interfaces
 2. Add TreeNode model for hierarchical structure
 
+## Second Phase
+
+1. Implementing basic data loading and consoling to check if things work
+2. Creating tree logic
+3. Continue implementing features and refining the tree logic as needed. Checking the console if the desired outcome is reached
