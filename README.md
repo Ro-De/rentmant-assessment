@@ -77,3 +77,4 @@ git push -u origin main
 ## Second Phase
 
 1. Implementing basic data loading and consoling to check if things work
+2. Creating tree logic
